@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kosmos-1 Y2K Date Converter</title>
+<style>
+:root{--bg:#f3f0e8;--ink:#202020;--accent:#b54b2f;--panel:#fffdf7}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:760px;margin:0 auto;padding:40px 20px 60px}h1{margin:0 0 8px;font-size:clamp(28px,6vw,44px)}
+.intro{margin:0 0 28px;line-height:1.5}.panel{background:var(--panel);border:1px solid #d8d1c2;border-radius:14px;padding:22px;margin:16px 0}
+.field{margin-bottom:18px}label{display:block;font-weight:700;margin-bottom:8px}
+input[type=date]{width:100%;padding:12px;font:inherit;border:1px solid #aaa;border-radius:8px;background:white}
+button{margin-top:4px;padding:12px 18px;font:inherit;font-weight:700;border:0;border-radius:8px;background:var(--accent);color:white;cursor:pointer}
+button:hover{filter:brightness(.92)}.result{margin-top:18px;padding:18px;border-left:5px solid var(--accent);background:#f5eadf;border-radius:6px}
+.date{font-size:clamp(24px,6vw,36px);font-weight:800;letter-spacing:.03em}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.small{color:#555;font-size:.94rem;line-height:1.5}.error{color:#9d1c1c;font-weight:700}
+.kosmos-row{display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:10px 0;border-bottom:1px solid #ddd5c8}
+.kosmos-row:last-child{border-bottom:0}@media(max-width:560px){.kosmos-row{display:block}}
+</style>
+</head>
+<body>
+<main>
+<h1>Kosmos-1 Y2K Date Converter</h1>
+<p class="intro">Enter a birth date and the date you want to calculate. The converter returns the two dates to enter into a Kosmos-1, preserving the exact interval between them.</p>
+
+<section class="panel">
+<div class="field"><label for="birthDate">Birth date</label><input id="birthDate" type="date"></div>
+<div class="field"><label for="currentDate">Date of interest</label><input id="currentDate" type="date"></div>
+<button id="convert">Convert for Kosmos-1</button>
+<div id="output" aria-live="polite"></div>
+</section>
+
+<section class="panel">
+<strong>Kosmos-1 entry</strong>
+<div id="kosmosOutput" class="small">Enter both dates and click Convert.</div>
+</section>
+
+<section class="panel">
+<strong>How it works</strong>
+<p class="small">The three Kosmos cycles are 23, 28 and 33 days. Their common period is 21,252 days (23 × 28 × 33). The converter subtracts complete 21,252-day periods from both dates until both dates fit the Kosmos-1's two-digit-year range of 1901–1999.</p>
+<p class="small">Both dates are shifted by exactly the same number of days, so their elapsed interval is unchanged. Since 21,252 is also divisible by 7, the weekday is preserved.
+<br><br>Roni Bandini - Maker Counterculture
+</p>
+
+</section>
+</main>
+
+<script>
+"use strict";
+const PERIOD=21252, MIN_YEAR=1901, MAX_YEAR=1999, DAY_MS=86400000;
+
+function parseISODate(value){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if(!m)return null;
+  const y=Number(m[1]),mo=Number(m[2]),d=Number(m[3]);
+  const dt=new Date(Date.UTC(y,mo-1,d));
+  if(dt.getUTCFullYear()!==y||dt.getUTCMonth()!==mo-1||dt.getUTCDate()!==d)return null;
+  return dt;
+}
+function formatISO(dt){
+  return [String(dt.getUTCFullYear()).padStart(4,"0"),String(dt.getUTCMonth()+1).padStart(2,"0"),String(dt.getUTCDate()).padStart(2,"0")].join("-");
+}
+function formatLong(dt){
+  return dt.toLocaleDateString("en-US",{timeZone:"UTC",year:"numeric",month:"long",day:"numeric"});
+}
+function formatKosmos(dt){
+  const mo=String(dt.getUTCMonth()+1).padStart(2,"0");
+  const d=String(dt.getUTCDate()).padStart(2,"0");
+  const y=String(dt.getUTCFullYear()).slice(-2);
+  return `${mo} ${d} ${y}`;
+}
+function subtractPeriods(dt,count){return new Date(dt.getTime()-count*PERIOD*DAY_MS);}
+
+function convertPair(birth,current){
+  if(birth.getTime()>current.getTime())throw new Error("The date of interest must be on or after the birth date.");
+  if(birth.getUTCFullYear()<MIN_YEAR)throw new Error("The birth date is before 1901 and cannot be represented by the Kosmos-1.");
+  let periods=0,convertedBirth=new Date(birth),convertedCurrent=new Date(current);
+  while(convertedBirth.getUTCFullYear()>MAX_YEAR||convertedCurrent.getUTCFullYear()>MAX_YEAR){
+    periods++;
+    convertedBirth=subtractPeriods(birth,periods);
+    convertedCurrent=subtractPeriods(current,periods);
+  }
+  if(convertedBirth.getUTCFullYear()<MIN_YEAR)throw new Error("The dates cannot both be mapped into the Kosmos-1 range.");
+  return {convertedBirth,convertedCurrent,periods};
+}
+
+function showResult(){
+  const output=document.getElementById("output"),kosmosOutput=document.getElementById("kosmosOutput");
+  output.innerHTML="";kosmosOutput.innerHTML="";
+  try{
+    const birth=parseISODate(document.getElementById("birthDate").value);
+    const current=parseISODate(document.getElementById("currentDate").value);
+    if(!birth||!current)throw new Error("Please enter both dates.");
+    const r=convertPair(birth,current);
+    const b=formatKosmos(r.convertedBirth),c=formatKosmos(r.convertedCurrent);
+    kosmosOutput.innerHTML=`<div class="kosmos-row"><strong>Birth date</strong><span class="date mono">${b}</span></div><div class="kosmos-row"><strong>Date of interest</strong><span class="date mono">${c}</span></div>`;
+    output.innerHTML=`<div class="result"><strong>Enter these values into your Kosmos-1:</strong><p>Birth: <span class="mono"><strong>${b}</strong></span><br>Date: <span class="mono"><strong>${c}</strong></span></p><p class="small">${formatLong(birth)} &rarr; ${formatLong(current)}<br>Both dates shifted back ${r.periods.toLocaleString()} × 21,252 days.</p></div>`;
+  }catch(err){
+    output.innerHTML=`<p class="error">${err.message}</p>`;
+    kosmosOutput.innerHTML="Enter both dates and click Convert.";
+  }
+}
+document.getElementById("convert").addEventListener("click",showResult);
+const now=new Date();
+document.getElementById("currentDate").value=formatISO(new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())));
+</script>
+</body>
+</html>
