@@ -1,5 +1,7 @@
 # Kosmos-1 Y2K Date Converter
 
+https://ronibandini.github.io/Kosmos-1/
+
 A dependency-free web utility for converting a **birth date + date of interest** into the two dates that can be entered into the original **Kosmos-1 Biorhythm Computer and Calculator**.
 
 ## How it works
