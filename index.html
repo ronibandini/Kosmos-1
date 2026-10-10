@@ -4,16 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kosmos-1 | Biorhythm Calculator</title>
+  <title>Kosmos-1 Date Converter</title>
   <style>
     :root {
-      color-scheme: light;
-      --ink: #20252b;
-      --muted: #626b75;
-      --paper: #f5f3ed;
-      --card: #ffffff;
-      --accent: #d6a900;
-      --line: #deded8;
+      --bg: #f4f2eb;
+      --paper: #fffefa;
+      --ink: #202326;
+      --muted: #666b70;
+      --line: #d9d7cf;
+      --accent: #faca02;
+      --red: #c83232;
+      --yellow: #e6bd24;
     }
 
     * { box-sizing: border-box; }
@@ -21,60 +22,90 @@
     body {
       margin: 0;
       padding: 32px 16px;
-      background: var(--paper);
+      background: var(--bg);
       color: var(--ink);
-      font: 16px/1.6 system-ui, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
     }
 
     main {
-      max-width: 760px;
-      margin: auto;
+      max-width: 780px;
+      margin: 0 auto;
     }
 
     header {
-      margin-bottom: 28px;
+      padding-bottom: 22px;
       border-bottom: 3px solid var(--ink);
-      padding-bottom: 18px;
     }
 
     .eyebrow {
-      color: var(--muted);
-      font-size: .8rem;
-      letter-spacing: .14em;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 2px;
       text-transform: uppercase;
+      color: var(--muted);
     }
 
     h1 {
-      margin: 6px 0;
-      font-size: clamp(2rem, 6vw, 3.2rem);
-      line-height: 1.1;
+      margin: 8px 0 16px;
+      font-size: clamp(32px, 7vw, 52px);
+      line-height: 1.05;
     }
 
-    h2 { margin-top: 0; font-size: 1.25rem; }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 23px;
+      line-height: 1.25;
+    }
 
-    .intro { color: var(--muted); }
+    h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
+    }
+
+    p { margin: 8px 0 14px; }
+
+    .hero-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 22px 0;
+      border: 1px solid var(--line);
+      background: white;
+    }
 
     .panel {
-      margin: 20px 0;
+      margin-top: 22px;
       padding: 24px;
-      background: var(--card);
+      background: var(--paper);
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 10px;
+    }
+
+    .section-number {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
 
     .field { margin: 18px 0; }
 
     label {
       display: block;
-      margin-bottom: 6px;
-      font-weight: 700;
+      margin-bottom: 7px;
+      font-weight: bold;
     }
 
-    input {
+    input[type="date"] {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #aeb4ba;
-      border-radius: 7px;
+      min-height: 46px;
+      padding: 10px 12px;
+      border: 1px solid #aaa9a2;
+      border-radius: 6px;
       background: white;
       color: var(--ink);
       font: inherit;
@@ -83,65 +114,120 @@
     button {
       width: 100%;
       margin-top: 8px;
-      padding: 13px 18px;
+      padding: 14px 18px;
       border: 0;
-      border-radius: 7px;
+      border-radius: 6px;
       background: var(--ink);
       color: white;
-      font: inherit;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: bold;
       cursor: pointer;
     }
 
-    button:hover { background: #414953; }
+    button:hover { background: #41464b; }
+
+    .error {
+      color: #a32121;
+      font-weight: bold;
+    }
 
     .result {
-      margin-top: 18px;
       padding: 18px;
-      background: #fbf7e5;
-      border-left: 4px solid var(--accent);
+      background: #fff7d5;
+      border-left: 5px solid var(--accent);
       border-radius: 4px;
+      overflow-wrap: anywhere;
     }
 
-    .cycle {
-      margin: 18px 0;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .cycle:last-child {
-      padding-bottom: 0;
-      border-bottom: 0;
-    }
-
-    .cycle-heading {
+    .result-row {
       display: flex;
       justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      padding: 9px 0;
+      border-bottom: 1px solid #e4dfcb;
+    }
+
+    .result-row:last-child { border-bottom: 0; }
+
+    .result-value {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .cycle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      font-weight: 700;
+      margin-top: 18px;
     }
 
-    .bar {
-      height: 10px;
-      margin: 10px 0;
-      overflow: hidden;
-      background: #e6e7e8;
-      border-radius: 20px;
+    .cycle-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: white;
     }
 
-    .bar-fill {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 20px;
+    .cycle-card .period {
+      font-size: 27px;
+      font-weight: bold;
     }
 
-    .muted { color: var(--muted); font-size: .92rem; }
+    .cycle-card .unit {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .legend-color {
+      flex: 0 0 14px;
+      width: 14px;
+      height: 14px;
+      margin-top: 5px;
+      border-radius: 3px;
+    }
+
+    .red { background: var(--red); }
+    .yellow { background: var(--yellow); }
+
+    .explanation {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f0efe9;
+      border-radius: 6px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
     .hidden { display: none; }
 
     footer {
-      margin-top: 30px;
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
       color: var(--muted);
-      font-size: .85rem;
+      font-size: 13px;
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 20px 12px; }
+      .panel { padding: 18px; }
+      .cycle-grid { grid-template-columns: 1fr; }
+      .result-row {
+        flex-direction: column;
+        gap: 2px;
+      }
+      .result-value { text-align: left; }
     }
   </style>
 </head>
@@ -149,109 +235,168 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow">Historical calculator · Kosmos-1</div>
-    <h1>Biorhythm Calculator</h1>
-    <p class="intro">
-      Explore the three traditional biorhythm cycles for a selected date.
+    <div class="eyebrow">Historical computing · Kosmos-1</div>
+    <h1>Kosmos-1 Date Converter</h1>
+    <p>
+      Convert dates to equivalent dates within the two-digit-year
+      range supported by the Kosmos-1 calculator.
     </p>
   </header>
 
+  <img
+    class="hero-image"
+    src="https://github.com/user-attachments/assets/35e2e5a8-eabf-4253-bc46-539a75beea64"
+    alt="Kosmos-1 calculator"
+  >
+
   <section class="panel">
-    <h2>01 — Interest date</h2>
-    <p class="muted">
-      Select the date you want to investigate.
-    </p>
+    <span class="section-number">01 · Date conversion</span>
+    <h2>Enter your dates</h2>
 
     <div class="field">
-      <label for="interestDate">Interest date</label>
+      <label for="interestDate">Date of interest</label>
       <input type="date" id="interestDate" required>
     </div>
-
-    <h2>02 — Birth date</h2>
-    <p class="muted">
-      Enter the date from which the cycles are calculated.
-    </p>
 
     <div class="field">
       <label for="birthDate">Birth date</label>
       <input type="date" id="birthDate" required>
     </div>
 
-    <button id="calculateButton" type="button">
-      Calculate biorhythms
-    </button>
-    <p id="error" class="muted" role="alert"></p>
+    <button type="button" id="convertButton">Convert dates</button>
+    <p id="error" class="error" role="alert"></p>
   </section>
 
   <section id="results" class="panel hidden" aria-live="polite">
-    <h2>Results</h2>
-    <div id="dateSummary" class="result"></div>
-    <div id="cycles"></div>
+    <span class="section-number">02 · Conversion results</span>
+    <h2>Equivalent dates</h2>
+
+    <div class="result">
+      <div class="result-row">
+        <span>Date of interest</span>
+        <span id="interestResult" class="result-value"></span>
+      </div>
+      <div class="result-row">
+        <span>Birth date</span>
+        <span id="birthResult" class="result-value"></span>
+      </div>
+      <div class="result-row">
+        <span>Elapsed interval</span>
+        <span id="intervalResult" class="result-value"></span>
+      </div>
+      <div class="result-row">
+        <span>Periods subtracted</span>
+        <span id="periodsResult" class="result-value"></span>
+      </div>
+    </div>
+
+    <p class="muted" id="conversionNote"></p>
   </section>
 
   <section class="panel">
-    <h2>How it works</h2>
+    <span class="section-number">03 · The Kosmos cycles</span>
+    <h2>Three repeating cycles</h2>
     <p>
-      Traditional biorhythm theory proposes three repeating cycles that
-      begin at birth. Each cycle is represented by a sine wave.
+      The Kosmos-1 system uses three cycles with different periods.
     </p>
 
-    <h3>Physical — 23 days</h3>
-    <p class="muted">
-      Traditionally associated with stamina and physical energy.
+    <div class="cycle-grid">
+      <article class="cycle-card">
+        <h3>P — Physical</h3>
+        <div class="period">23 <span class="unit">days</span></div>
+        <p class="muted">Physical cycle</p>
+      </article>
+
+      <article class="cycle-card">
+        <h3>S — Sensitivity</h3>
+        <div class="period">28 <span class="unit">days</span></div>
+        <p class="muted">Sensitivity cycle</p>
+      </article>
+
+      <article class="cycle-card">
+        <h3>I — Intellectual</h3>
+        <div class="period">33 <span class="unit">days</span></div>
+        <p class="muted">Intellectual cycle</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel">
+    <span class="section-number">04 · Reading the results</span>
+    <h2>Critical and minicritical days</h2>
+
+    <div class="legend-item">
+      <span class="legend-color red"></span>
+      <div>
+        <h3>Red / Critical days</h3>
+        <p>
+          Body or mind is less stable on these days, making you more
+          prone to accidents, emotional missteps, or poor concentration
+          in that specific domain (physical, emotional, or intellectual).
+        </p>
+      </div>
+    </div>
+
+    <div class="legend-item">
+      <span class="legend-color yellow"></span>
+      <div>
+        <h3>Yellow / Minicritical</h3>
+        <p>
+          Represents a state of depleted reserve—such as severe
+          physical fatigue (-100% physical), deep sadness or burnout
+          (-100% emotional), or mental exhaustion and brain fog
+          (-100% intellectual).
+        </p>
+      </div>
+    </div>
+
+    <div class="explanation">
+      <h3>About these interpretations</h3>
+      <p class="muted">
+        These descriptions reflect the traditional biorhythm framework
+        associated with the calculator; they are not scientifically
+        established predictions of health, behavior, or performance.
+      </p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <span class="section-number">05 · Conversion method</span>
+    <h2>Why the dates can be shifted</h2>
+
+    <p>
+      The three Kosmos cycles are 23, 28 and 33 days. Their common
+      period is 21,252 days (23 × 28 × 33).
     </p>
 
-    <h3>Emotional — 28 days</h3>
-    <p class="muted">
-      Traditionally associated with mood and emotional state.
+    <p>
+      The converter subtracts complete 21,252-day periods from both
+      dates until both dates fit the Kosmos-1's two-digit-year range
+      of 1901–1999.
     </p>
 
-    <h3>Intellectual — 33 days</h3>
-    <p class="muted">
-      Traditionally associated with concentration and mental performance.
-    </p>
-
-    <p class="muted">
-      These are historical concepts, not scientifically validated
-      measures of physical, emotional, or intellectual performance.
+    <p>
+      Both dates are shifted by exactly the same number of days, so
+      their elapsed interval is unchanged. Since 21,252 is also
+      divisible by 7, the weekday is preserved.
     </p>
   </section>
 
   <footer>
-    Kosmos-1 · Historical computing and the culture of calculation
+    <strong>Roni Bandini — Maker Counterculture</strong>
   </footer>
 </main>
 
 <script>
+  const PERIOD_DAYS = 21252;
+  const DAY_MS = 86400000;
+
   const $ = id => document.getElementById(id);
-
-  const DAY_MS = 24 * 60 * 60 * 1000;
-
-  const cycles = [
-    {
-      name: "Physical",
-      period: 23,
-      description: "Traditionally linked to physical energy and stamina."
-    },
-    {
-      name: "Emotional",
-      period: 28,
-      description: "Traditionally linked to mood and emotional state."
-    },
-    {
-      name: "Intellectual",
-      period: 33,
-      description: "Traditionally linked to concentration and mental activity."
-    }
-  ];
 
   function parseDate(value) {
     if (!value) return null;
 
-    const parts = value.split("-").map(Number);
-    if (parts.length !== 3) return null;
-
-    const [year, month, day] = parts;
+    const [year, month, day] = value.split("-").map(Number);
     const date = new Date(Date.UTC(year, month - 1, day));
 
     if (
@@ -274,16 +419,21 @@
     }).format(date);
   }
 
-  function daysBetween(start, end) {
+  function addDays(date, days) {
+    return new Date(date.getTime() + days * DAY_MS);
+  }
+
+  function elapsedDays(start, end) {
     return Math.round((end.getTime() - start.getTime()) / DAY_MS);
   }
 
-  function calculate() {
+  function convert() {
     const interest = parseDate($("interestDate").value);
     const birth = parseDate($("birthDate").value);
     const error = $("error");
 
     error.textContent = "";
+    $("results").classList.add("hidden");
 
     if (!interest || !birth) {
       error.textContent = "Please enter both dates.";
@@ -291,51 +441,57 @@
     }
 
     if (interest < birth) {
-      error.textContent = "The interest date cannot precede the birth date.";
+      error.textContent =
+        "The date of interest must be on or after the birth date.";
       return;
     }
 
-    const elapsedDays = daysBetween(birth, interest);
+    let convertedInterest = new Date(interest);
+    let convertedBirth = new Date(birth);
+    let periods = 0;
 
-    $("dateSummary").innerHTML = `
-      <strong>Interest date:</strong> ${formatDate(interest)}<br>
-      <strong>Birth date:</strong> ${formatDate(birth)}<br>
-      <strong>Elapsed time:</strong> ${elapsedDays.toLocaleString()} days
-    `;
+    function inRange(date) {
+      const year = date.getUTCFullYear();
+      return year >= 1901 && year <= 1999;
+    }
 
-    $("cycles").innerHTML = cycles.map(cycle => {
-      const angle = 2 * Math.PI * elapsedDays / cycle.period;
-      const value = Math.sin(angle) * 100;
-      const percent = ((value + 100) / 2);
-      const label = value > 0
-        ? "Positive phase"
-        : value < 0
-          ? "Negative phase"
-          : "Neutral point";
+    while (
+      convertedInterest.getUTCFullYear() > 1999 ||
+      convertedBirth.getUTCFullYear() > 1999
+    ) {
+      convertedInterest = addDays(convertedInterest, -PERIOD_DAYS);
+      convertedBirth = addDays(convertedBirth, -PERIOD_DAYS);
+      periods++;
+    }
 
-      return `
-        <article class="cycle">
-          <div class="cycle-heading">
-            <span>${cycle.name}</span>
-            <span>${value.toFixed(1)}%</span>
-          </div>
-          <div class="bar" role="img"
-               aria-label="${cycle.name} cycle position ${value.toFixed(1)} percent">
-            <div class="bar-fill" style="width:${percent}%"></div>
-          </div>
-          <p><strong>${label}</strong></p>
-          <p class="muted">
-            Cycle length: ${cycle.period} days.
-            ${cycle.description}
-          </p>
-        </article>
-      `;
-    }).join("");
+    if (!inRange(convertedInterest) || !inRange(convertedBirth)) {
+      error.textContent =
+        "These dates cannot both be represented in the 1901–1999 range " +
+        "by subtracting complete 21,252-day periods.";
+      return;
+    }
+
+    $("interestResult").textContent = formatDate(convertedInterest);
+    $("birthResult").textContent = formatDate(convertedBirth);
+
+    const interval = elapsedDays(birth, interest);
+    $("intervalResult").textContent =
+      interval.toLocaleString() + " days";
+
+    $("periodsResult").textContent =
+      periods.toLocaleString();
+
+    $("conversionNote").textContent = periods === 0
+      ? "Both dates are already within the supported year range. No shift was necessary."
+      : `Both original dates were shifted backward by ${(
+          periods * PERIOD_DAYS
+        ).toLocaleString()} days (${periods} complete common periods). ` +
+        "The elapsed interval and weekday of each date are preserved.";
 
     $("results").classList.remove("hidden");
   }
 
-  $("calculateButton").addEventListener("click", calculate);
+  $("convertButton").addEventListener("click", convert);
 </script>
 </body>
 </html>
