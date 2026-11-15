@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -253,13 +254,18 @@
     <h2>Enter your dates</h2>
 
     <div class="field">
-      <label for="interestDate">Date of interest* (today)</label>
+      <label for="interestDate">Date of interest</label>
       <input type="date" id="interestDate" required>
     </div>
 
     <div class="field">
       <label for="birthDate">Birth date</label>
       <input type="date" id="birthDate" required>
+    </div>
+
+    <div class="field">
+      <label>Format: mm dd yy (e.g., 05 15 90 = May 15, 1990)</label>
+      <input type="text" id="dateFormatNote" class="muted" readonly value="mm dd yy" style="padding:10px 12px; border:1px solid #aaa9a2; border-radius:6px; font-size:13px;">
     </div>
 
     <button type="button" id="convertButton">Convert dates</button>
@@ -290,6 +296,34 @@
     </div>
 
     <p class="muted" id="conversionNote"></p>
+  </section>
+
+  <section class="panel">
+    <span class="section-number">03 · Procedure</span>
+    <h2>Enter dates into Kosmos-1</h2>
+
+    <p>
+      To enter your dates into the Kosmos-1 system, use the following procedure:
+    </p>
+
+    <div class="field">
+      <label>1. Current date date key</label>
+      <input type="text" id="currentDateKey" class="muted" readonly value="00 00 00" style="padding:10px 12px; border:1px solid #aaa9a2; border-radius:6px; font-size:13px; background:#f0efe9;">
+    </div>
+
+    <div class="field">
+      <label>2. Birth date b1</label>
+      <input type="text" id="birthDateKey" class="muted" readonly value="00 00 00" style="padding:10px 12px; border:1px solid #aaa9a2; border-radius:6px; font-size:13px; background:#f0efe9;">
+    </div>
+
+    <div class="field">
+      <label>3. Bio key</label>
+      <input type="text" id="bioKey" class="muted" readonly value="00 00 00" style="padding:10px 12px; border:1px solid #aaa9a2; border-radius:6px; font-size:13px; background:#f0efe9;">
+    </div>
+
+    <p class="muted" style="margin-top:10px;">
+      Note: The actual bio key is derived from the three Kosmos cycles (23/28/33 days) and represents your personal biorhythm profile. Enter dates in mm dd yy format.
+    </p>
   </section>
 
   <section class="panel">
@@ -410,12 +444,11 @@
   }
 
   function formatDate(date) {
-    return new Intl.DateTimeFormat("en", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "UTC"
-    }).format(date);
+    const d = new Date(date);
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const year = String(d.getUTCFullYear() % 100).padStart(2, '0');
+    return `${month} ${day} ${year}`;
   }
 
   function addDays(date, days) {
